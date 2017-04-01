@@ -47,12 +47,12 @@ public class BasicClient
 	 */
 	public static void main(String args[]) throws IOException
 	{
-//		BasicClient client = null;
-//		for(int numberOfClients = 0; numberOfClients < 10; numberOfClients++)
-//		{
-//			client = new BasicClient(); // calls constructor for a new client
-//		}
-//		System.out.println("The server will not handle more clients.");
+		BasicClient client = null;
+		for(int numberOfClients = 0; numberOfClients < 10; numberOfClients++)
+		{
+			client = new BasicClient(); // calls constructor for a new client
+		}
+		System.out.println("The server will not handle more clients.");
 
 
 		int ID=1; // The client's ID
