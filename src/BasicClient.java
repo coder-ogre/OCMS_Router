@@ -47,18 +47,58 @@ public class BasicClient
 	 */
 	public static void main(String args[]) throws IOException
 	{
-		BasicClient client = null;
-		for(int numberOfClients = 0; numberOfClients < 10; numberOfClients++)
-		{
-			client = new BasicClient(); // calls constructor for a new client
-		}
-		System.out.println("The server will not handle more clients.");
+//		BasicClient client = null;
+//		for(int numberOfClients = 0; numberOfClients < 10; numberOfClients++)
+//		{
+//			client = new BasicClient(); // calls constructor for a new client
+//		}
+//		System.out.println("The server will not handle more clients.");
 
 
-		int ID=1; // The client's ID
-		System.out.println(generateMessage(ID, 3, 'v', 't'));
+		char ID='1', destination='4'; // The client's ID
+		String message =generateMessage(ID, destination, 'v', 't');
+		System.out.println(message);
+		System.out.println(checkChecksum(message)); // should return true
+		System.out.println(checkChecksum("12ovt")); // should return false
+
 	}
 
+	/**
+	 * Ensures the checksum is good, if it isn't it returns false
+	 * @param message
+	 * @return
+	 * @author Jessica Schlesiger
+	 */
+	static boolean checkChecksum(String message)
+	{
+		int locationOfChecksum = 2;
+		String checksum = addLeadingZeros(Integer.toBinaryString(message.charAt(locationOfChecksum)));
+
+		StringBuilder msg = new StringBuilder(message);
+		message = msg.deleteCharAt(locationOfChecksum).toString(); // deletes the checksum character
+		char[] chars= new char[4];
+		for (int i=0;i<4;i++) // grabs each character individually
+		{
+			//System.out.println(addLeadingZeros(Integer.toBinaryString((char)message.charAt(i))));
+			chars[i] = message.charAt(i);
+		}
+		String charSum=Integer.toBinaryString(chars[0]+chars[1]+chars[2]+chars[3]);
+		if (charSum.length() > 8) // carries the 1
+		{
+			charSum = Integer.toBinaryString((chars[0]+chars[1]+chars[2]+chars[3])+1);
+			charSum = addLeadingZeros(charSum.substring(1,8));
+		}
+//		System.out.println(charSum);
+//		System.out.println(checksum);
+
+		for (int i=0;i<8;i++)
+		{
+			if (charSum.charAt(i) != '1')
+				if (checksum.charAt(i) != '1')
+					return false;
+		}
+		return true;
+	}
 	/**
 	 * Generates the message to be sent to other clients
 	 * @param ID - the current client's ID
@@ -68,10 +108,15 @@ public class BasicClient
 	 * @return - complete string message it wants to send to server
 	 * @author Jessica Schlesiger
 	 */
-	static String generateMessage(int ID, int destination, char data1, char data2)
+	static String generateMessage(char ID, char destination, char data1, char data2)
 	{
 		// Creates checksum
 		String checksum = Integer.toBinaryString((ID+destination+data1+data2)); // adds the two characters then converts to binary
+		if (checksum.length()>8) // if we have a 9th 1, then it carries the 1
+		{
+			checksum = Integer.toBinaryString((ID+destination+data1+data2)+1);
+			checksum= checksum.substring(1,8);
+		}
 		checksum = addLeadingZeros(checksum); // adds leading zeros
 		checksum = invertBinary(checksum); // inverts binary
 		int parseInt = Integer.parseInt(checksum, 2); // converts to an integer
