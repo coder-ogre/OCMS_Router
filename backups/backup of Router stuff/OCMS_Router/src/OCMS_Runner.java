@@ -39,6 +39,7 @@ import java.net.Socket;
 					backwardsMessage += message.charAt(10 - stringIndex - 1); // creates backwards message
 					++stringIndex;
 				}
+				//out2.writeChars(backwardsMessage);
 				out.println(backwardsMessage); // sends backwards message out to the client
 			} catch (IOException e) {
 				// TODO Auto-generated catch block

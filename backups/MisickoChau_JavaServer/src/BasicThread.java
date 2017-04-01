@@ -1,6 +1,5 @@
 /*
- * OCMS: Olaf, Chau, Misicko, Schlesiger
- * OCMS Runner
+ * @authors Drew Misicko and Truc Chau
  */
 
 import java.io.BufferedReader;
@@ -14,10 +13,10 @@ import java.net.Socket;
 	/*
 	 * This class uses threads, and each thread process a message sent by the client
 	 */
-	public class OCMS_Runner extends Thread
+	public class BasicThread extends Thread
 	{
 		private Socket connect; // gets the same ServerSocket to listen for doorbells
-		public OCMS_Runner(Socket connect)
+		public BasicThread(Socket connect)
 		{
 			this.connect = connect;// assigns the port for listening
 		}
@@ -39,6 +38,7 @@ import java.net.Socket;
 					backwardsMessage += message.charAt(10 - stringIndex - 1); // creates backwards message
 					++stringIndex;
 				}
+				//out2.writeChars(backwardsMessage);
 				out.println(backwardsMessage); // sends backwards message out to the client
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
