@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Client class
  * Client_Id = 1
  */
+
 public class Client extends Thread
 {	
 	String IPAddressLocalHost ="127.0.0.1";//local host
