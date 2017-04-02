@@ -23,7 +23,7 @@ public class Client extends Thread
 	public Client() throws IOException, InterruptedException
 	{	
 		//Suppose the client knows all the IP addresses of all routers
-		//May need to hard code the IP address and write the random selection code
+		//May need to hard code the IP address and write the random selection code?
 		String IPAddressDestination ="127.0.0.1";
 		
 		
