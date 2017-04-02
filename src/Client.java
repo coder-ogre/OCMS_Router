@@ -13,53 +13,66 @@ import java.util.concurrent.TimeUnit;
 
 /*
  * Client class
+ * Client_Id = 1
  */
 public class Client extends Thread
 {	
+	String IPAddressLocalHost ="127.0.0.1";//local host
 	private Socket connect;
 	/**
 	 * Constructor for Basic Client, includes code to be executed upon instantiation
 	 */
 	public Client() throws IOException, InterruptedException
 	{	
-		//Suppose the client knows all the IP addresses of all routers
-		//May need to hard code the IP address and write the random selection code?
-		String IPAddressDestination ="127.0.0.1";
+		/**
+		 * Create random destinations
+		 * Pick any number from 2-4
+		 * Suppose the local host associated to "1"
+		 */
+		Random rand = new Random();
 		
+		int Destination = rand.nextInt((4-2)+1)+2;
 		
-		Socket connect = new Socket(IPAddressDestination, 4446); // attempts to ring the bell of this socket address, 127.0.0.1:4446
+		/**
+		 * Making connection
+		 */
+		Socket connect = new Socket(IPAddressLocalHost, 4446); // attempts to ring the bell of this socket address, 127.0.0.1:4446
 		System.out.println("Welcome to 127.0.0.1!");
-		//Scanner scan = new Scanner(System.in); // client takes input from keyboard
-		//String message;
-		//message = scan.nextLine(); // stores input into message
-//		while(!(message.length() == 10)) // only accepts strings 10 characters in length
-//		{
-//			System.out.print("You've entered " + message.length() + " characters as input.\nMake sure your input is exactly 10 characters long, please retry entering. \n");
-//			message = scan.nextLine(); // tries to get input again
-//		}
 		
+		/**
+		 * The data of the content will increase by 1. 
+		 */
 		int dataContent = 1;
-		while(dataContent!=10001)
+		String message; 
+		while(dataContent!=10)
 		{
-			TimeUnit.SECONDS.sleep(2);
+			message = IPAddressLocalHost;
+			message = message + String.valueOf(Destination);
+			//need to add checksum to the message
+			message = message + dataContent; 
+			message = message +dataContent;
+			
+			
 			//Send out message
 			PrintWriter out = new PrintWriter(connect.getOutputStream(), true); 
-			out.println(dataContent); // sends out message to server
+			out.println(message); // sends out message to server
 			
 			//Print out the message and destination IP Address
-			System.out.println("Sending data content is "+ dataContent+" to"+ IPAddressDestination);
+			System.out.println("Sending data content is "+ dataContent+" to "+ IPAddressLocalHost);
 			
 			//Receive message back and print it out
 			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			System.out.println("The received message is " + in.readLine() + ".\n"); // gets the reversed message from the server
 			
-			if(dataContent==10000)
+			TimeUnit.SECONDS.sleep(2);
+			if(dataContent==10)
 			{
 				connect.close();   
 				out.close();     // closes connections
 				in.close();
 			}
 			dataContent++;
+			System.out.println("Content = "+dataContent);
 		}
 		
 	}
