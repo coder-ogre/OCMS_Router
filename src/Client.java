@@ -60,7 +60,7 @@ public class Client extends Thread
 			//Print out the message and destination IP Address
 			System.out.println("Sending data content is "+ dataContent+" to "+ IPAddressLocalHost);
 			
-			//Receive message back and print it out
+			//Receive message from another client and print it out
 			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			System.out.println("The received message is " + in.readLine() + ".\n"); // gets the reversed message from the server
 			
