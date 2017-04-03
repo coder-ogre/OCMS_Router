@@ -1,11 +1,6 @@
 /BasicClient.class
-/OCMS_Router.class
-/OCMS_Runner.class
-<<<<<<< HEAD
-/OCMS_ClientListener.class
-/OCMS_ServerListener.class
-/OCMS_Master_Runner.class
-=======
-/TrucClient.class
 /Client.class
->>>>>>> origin/master
+/OCMS_ClientListener.class
+/OCMS_Master_Runner.class
+/OCMS_Router.class
+/OCMS_ServerListener.class
