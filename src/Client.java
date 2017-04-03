@@ -42,7 +42,7 @@ public class Client extends Thread
 			/*
 			 * Create a message to send out
 			 */
-			Destination = createRandomDestination();
+			randomDestination = createRandomDestination();
 			message[0] = clientID; //Source
 			message[1] = randomDestination; //Destination will be randomly chosen
 			//System.out.println("Destination Address "+Destination);
