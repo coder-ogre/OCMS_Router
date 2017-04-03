@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 /*
  * Client class
- * Client_Id = 1
+ * Client_ID = 1
+ * 
  */
 public class Client extends Thread
 {	
@@ -32,31 +33,30 @@ public class Client extends Thread
 		/**
 		 * The data of the content will increase by 1. 
 		 */
-		int dataContent = 1;
-		String message; 
-		String destinationAddress;
-		int Destination;
+		byte dataContent = 1;
+		byte clientID = 1; 
+		byte message = new byte[]; 
+		byte randomDestination;
 		while(dataContent!=10) //each client sends.km out 10 messages
 		{
 			/*
 			 * Create a message to send out
 			 */
 			Destination = createRandomDestination();
-			message = IPAddressLocalHost; //Source
-			message = message + String.valueOf(Destination); //Destination will be randomly chosen
-			destinationAddress = message;
+			message[0] = clientID; //Source
+			message[1] = randomDestination; //Destination will be randomly chosen
 			//System.out.println("Destination Address "+Destination);
 			
 			//need to add checksum to the message later
-			message = message + dataContent; 
-			message = message +dataContent;
+			message[3] = dataContent; 
+			message[4] = dataContent;
 			
 			//Send out message
 			PrintWriter out = new PrintWriter(connect.getOutputStream(), true); 
 			out.println(message); // sends out message to server
 			
 			//Print out the message and destination IP Address
-			System.out.println("Sending message "+ message+" to "+destinationAddress);
+			System.out.println("Sending message "+ message+" to "+randomDestination);
 			
 			//Receive message from another client and print it out
 			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
@@ -70,16 +70,13 @@ public class Client extends Thread
 				in.close();
 			}
 			
-			//When one iteration is done, these variables will be initialized to empty string
-			destinationAddress =""; //reset the destination address each iteration
-			message="";
 			
 			dataContent++;
 		}
 		
 	}
 
-public static int createRandomDestination()
+public static byte createRandomDestination()
 {
 		/**
 		 * Create random destinations
