@@ -9,7 +9,8 @@
 #include <pthread.h>
 
 /**
-* A Server to read 10 character messages from client.
+* A router that will receive messages from clients/routers and then forward
+* them to their proper destinations.
 * Author: Brad Olah
 */
 
@@ -42,9 +43,9 @@ int main(int argc, char *argv[])
 	listen(listeningSocket,10);
 	
 	/*
-	* Waits for a client to try to connect.
+	* Waits for a client/router to try to connect.
 	* Makes a socket connection then creates a thread to
-	* handle messages from that client.
+	* handle the client/routers message.
 	*/
 	while(1)
 	{
@@ -58,41 +59,14 @@ int main(int argc, char *argv[])
 }
 
 /*
-* A thread that can read ten 10 character messages from a client
-* ending its thread.
+* A thread that will forward the message on to either its destination,
+* or the next step on the way to its destination.
 */
 void* handleConnection(void *arg)
 {
 	//Stores the socket that this thread communicates on.
 	int inSocket = (int)arg;
 	puts("Thread Made");
- 
- //Read from the server addresses text file to find the addresses of the other routers.
-	char router1[12];
-	char router2[12];
-	char router3[12];
-	char router4[12];	
-	FILE *fp;
-	fp = fopen("serverAddresses.txt","r");
-	fgets(router1,12,(FILE*)fp);
-	fgets(router2,12,(FILE*)fp);
-	fgets(router3,12,(FILE*)fp);
-	fgets(router4,12,(FILE*)fp);
-	//printf("%s, %s, %s, %s",router1,router2,router3,router4);
-	fclose(fp);
-	
-	//Read from the routing table text file to find where to send.	
-	char toRouter1[12];
-	char toRouter2[12];
-	char toRouter3[12];
-	char toRouter4[12];
-	fp = fopen("routingTable.txt","r");
-	fgets(toRouter1,12,(FILE*)fp);
-	fgets(toRouter2,12,(FILE*)fp);
-	fgets(toRouter3,12,(FILE*)fp);
-	fgets(toRouter4,12,(FILE*)fp);
-	//printf("%s, %s, %s, %s",toRouter1,toRouter2,toRouter3,toRouter4);
-	fclose(fp);
   
 	//Creates two character arrays to hold incomming and outgoing messages.
 	char readBuffer[6];
@@ -127,6 +101,7 @@ void* handleConnection(void *arg)
 			char destinationAddress[12];	 //The address of the router to send to.
 
 			//Looks up how to get the destination from the routing table.
+			FILE *fp;
 			fp = fopen("routingTable.txt","r");
 			for(int j =0;j<destInt;j++)
 			{
