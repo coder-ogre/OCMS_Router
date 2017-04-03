@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Client extends Thread
 {	
-	String IPAddressLocalHost ="127.0.0.1";//local host
+	String IPAddressLocalHost ="10.0.0.9";//local host
 	private Socket connect;
 	/**
 	 * Constructor for Basic Client, includes code to be executed upon instantiation
@@ -28,7 +28,6 @@ public class Client extends Thread
 		/**
 		 * Create random destinations
 		 * Pick any number from 2-4
-		 * Suppose the local host associated to "1"
 		 */
 		Random rand = new Random();
 		
@@ -45,11 +44,15 @@ public class Client extends Thread
 		 */
 		int dataContent = 1;
 		String message; 
-		while(dataContent!=10)
+		while(dataContent!=10) //send out 10 messages
 		{
-			message = IPAddressLocalHost;
-			message = message + String.valueOf(Destination);
-			//need to add checksum to the message
+			/*
+			 * Create a message to send out
+			 */
+			message = IPAddressLocalHost; //Source
+			message = message + String.valueOf(Destination); //Destination will be randomly chosen
+			String destinationAddress = message; 
+			//need to add checksum to the message later
 			message = message + dataContent; 
 			message = message +dataContent;
 			
@@ -59,21 +62,21 @@ public class Client extends Thread
 			out.println(message); // sends out message to server
 			
 			//Print out the message and destination IP Address
-			System.out.println("Sending data content is "+ dataContent+" to "+ IPAddressLocalHost);
+			System.out.println("Sending message "+ message+" to "+destinationAddress);
 			
 			//Receive message from another client and print it out
 			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			System.out.println("The received message is " + in.readLine() + ".\n"); // gets the reversed message from the server
 			
 			TimeUnit.SECONDS.sleep(2);
-			if(dataContent==10)
+			if(dataContent==10) //after sending out 10 messages, connection will be closed
 			{
 				connect.close();   
 				out.close();     // closes connections
 				in.close();
 			}
 			dataContent++;
-			System.out.println("Content = "+dataContent);
+		//	System.out.println("Content = "+dataContent);
 		}
 		
 	}
