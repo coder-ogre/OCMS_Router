@@ -1,7 +1,6 @@
 /*
  * @authors Drew Misicko and Truc Chau
  */
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,7 +14,6 @@ import java.util.concurrent.TimeUnit;
  * Client class
  * Client_Id = 1
  */
-
 public class Client extends Thread
 {	
 	String IPAddressLocalHost ="10.0.0.9";//local host
@@ -24,15 +22,7 @@ public class Client extends Thread
 	 * Constructor for Basic Client, includes code to be executed upon instantiation
 	 */
 	public Client() throws IOException, InterruptedException
-	{	
-		/**
-		 * Create random destinations
-		 * Pick any number from 2-4
-		 */
-		Random rand = new Random();
-		
-		int Destination = rand.nextInt((4-2)+1)+2;
-		
+	{		
 		/**
 		 * Making connection
 		 */
@@ -44,18 +34,22 @@ public class Client extends Thread
 		 */
 		int dataContent = 1;
 		String message; 
-		while(dataContent!=10) //send out 10 messages
+		String destinationAddress;
+		int Destination;
+		while(dataContent!=10) //each client sends.km out 10 messages
 		{
 			/*
 			 * Create a message to send out
 			 */
+			Destination = createRandomDestination();
 			message = IPAddressLocalHost; //Source
 			message = message + String.valueOf(Destination); //Destination will be randomly chosen
-			String destinationAddress = message; 
+			destinationAddress = message;
+			//System.out.println("Destination Address "+Destination);
+			
 			//need to add checksum to the message later
 			message = message + dataContent; 
 			message = message +dataContent;
-			
 			
 			//Send out message
 			PrintWriter out = new PrintWriter(connect.getOutputStream(), true); 
@@ -66,39 +60,41 @@ public class Client extends Thread
 			
 			//Receive message from another client and print it out
 			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
-			System.out.println("The received message is " + in.readLine() + ".\n"); // gets the reversed message from the server
+			System.out.println("The received message is " + in.readLine() + ".\n");
 			
-			TimeUnit.SECONDS.sleep(2);
+			TimeUnit.SECONDS.sleep(2); //send out message every 2 seconds
 			if(dataContent==10) //after sending out 10 messages, connection will be closed
 			{
 				connect.close();   
 				out.close();     // closes connections
 				in.close();
 			}
+			
+			//When one iteration is done, these variables will be initialized to empty string
+			destinationAddress =""; //reset the destination address each iteration
+			message="";
+			
 			dataContent++;
-		//	System.out.println("Content = "+dataContent);
 		}
 		
 	}
-	
-	/*
-	 * main method
-	 */
-	public static void main(String args[]) throws IOException, InterruptedException
-	{
-		Client client = null;
+
+public static int createRandomDestination()
+{
 		/**
-		 * Assume we only have 4 clients
+		 * Create random destinations
+		 * Pick any number from 2-4
 		 */
+		Random rand = new Random();
 		
-		int numberOfClient = 0;
-			while(numberOfClient !=4) //can we change it to infinite number of clients???
-			{
-				client = new Client(); // calls constructor for a new client
-				numberOfClient++;
-			}
-			
+		return rand.nextInt((4-2)+1)+2;
 		
+}
 		
-	}
+	
+public static void main(String args[]) throws IOException, InterruptedException
+{
+		Client client = new Client(); // calls constructor for a new client	
+}
+
 }
