@@ -1,6 +1,4 @@
-/*
- * @authors Drew Misicko and Truc Chau
- */
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,11 +10,13 @@ import java.util.concurrent.TimeUnit;
 
 /*
  * Client class
+ * @author: Truc Chau
  */
 public class Client extends Thread
 {
-	String IPAddressLocalHost ="157.160.37.89";//local host
+	String IPAddressLocalHost ="157.160.37.90";//local host
 	private Socket connect;
+
 	/**
 	 * Constructor for Basic Client, includes code to be executed upon instantiation
 	 */
@@ -27,19 +27,31 @@ public class Client extends Thread
 		/**
 		 * The data of the content will increase by 1.
 		 */
-		char ID='1';
+		char ID;
 		String message;
 		char randomDest;
-		for(int dataContent = 1; dataContent<2; dataContent++) //Suppose each client sends out 10 messages
+		BufferedReader in;
+
+		for(int dataContent = 1; dataContent<10; dataContent++) //Suppose each client sends out 10 messages
 		{
+
 
 			/**
 			 * Making connection
+			 * choose randomly port number to connect to
 			 */
-			connect = new Socket(IPAddressLocalHost, 4446); // attempts to ring the bell of this socket address, 127.0.0.1:4446
+			connect = new Socket(IPAddressLocalHost,2345); // attempts to ring the bell of this socket address
 
+
+			 //Receive the ID from the router, @author: Drew Misicko
+			in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+			ID = in.readLine().charAt(0);
+
+
+			//Create random destination
 			randomDest = (char)(createRandomDestination()+48);
 
+			//Generate message to send out
 			message = generateMessage(ID,randomDest,(char)(dataContent+48),(char)(dataContent+48));
 
 			//Send out message
@@ -49,36 +61,35 @@ public class Client extends Thread
 			//Print out the message and destination IP Address
 			System.out.println("Sending message "+ message+" to "+randomDest);
 
-			TimeUnit.SECONDS.sleep(2); //send out message every 2 seconds
+
 
 			//Receive message from another client and do the check sum
 			//If the checkChecksum function returns true, then print out the message
-			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
-			String receivedMessage = in.readLine();
-
-			/**
-			 * When client receives the message, it will make sure the message is not corrupted.
-			 */
-			if(checkChecksum(receivedMessage)==true)
-			{
-				System.out.println("The received message is " + receivedMessage + ".\n");
-			}
-			else
-			{
-				System.out.println("The receive message has been corrupted");
-			}
-
-
-
-//			if(dataContent==10)
-//			{
+//			BufferedReader in1 = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+//			String receivedMessage = in1.readLine();
 //
-//				connect.close();
-//				out.close();     // closes connections
-//				in.close();
+//			/**
+//			 * When client receives the message, it will make sure the message is not corrupted.
+//			 */
+//			if(checkChecksum(receivedMessage)==true)
+//			{
+//				System.out.println("The received message is " + receivedMessage + ".\n");
 //			}
-			dataContent++;
+//			else
+//			{
+//				System.out.println("The receive message has been corrupted");
+//			}
 
+			TimeUnit.SECONDS.sleep(2); //send out message every 2 seconds
+
+
+			//System.out.println(dataContent);
+
+				//Close connection
+				connect.close();
+				out.close();
+				in.close();
+				//in1.close();
 
 		}
 
@@ -92,6 +103,7 @@ public static void main(String args[]) throws IOException, InterruptedException
 		 * Each client should keep sending out messages to random clients
 		 */
 		Client client1 = new Client(); // calls constructor for a new client
+
 
 //	}
 
