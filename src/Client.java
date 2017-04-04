@@ -15,30 +15,29 @@ import java.util.concurrent.TimeUnit;
  */
 public class Client extends Thread
 {
-	String IPAddressLocalHost ="127.0.0.1";//local host
+	String IPAddressLocalHost ="157.160.37.89";//local host
 	private Socket connect;
 	/**
 	 * Constructor for Basic Client, includes code to be executed upon instantiation
 	 */
 	public Client() throws IOException, InterruptedException
 	{
-		/**
-		 * Making connection
-		 */
 
-		//System.out.println("Welcome to 127.0.0.1!");
-		//System.out.println(connect);
+
 		/**
 		 * The data of the content will increase by 1.
 		 */
 		char ID='1';
 		String message;
 		char randomDest;
-		//int dataContent=1;
-		for(int dataContent = 1; dataContent<10; dataContent++) //Suppose each client sends out 10 messages
+		for(int dataContent = 1; dataContent<2; dataContent++) //Suppose each client sends out 10 messages
 		{
 
+			/**
+			 * Making connection
+			 */
 			connect = new Socket(IPAddressLocalHost, 4446); // attempts to ring the bell of this socket address, 127.0.0.1:4446
+
 			randomDest = (char)(createRandomDestination()+48);
 
 			message = generateMessage(ID,randomDest,(char)(dataContent+48),(char)(dataContent+48));
@@ -57,24 +56,27 @@ public class Client extends Thread
 			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
 			String receivedMessage = in.readLine();
 
-//			if(checkChecksum(receivedMessage)==true)
-//			{
-				System.out.println("The received message is " + receivedMessage + ".\n");
-//			}
-//			else
-//			{
-				System.out.println("The receive message has been corrupted");
-//			}
-
-				System.out.println(connect);
-
-			if(dataContent==10)
+			/**
+			 * When client receives the message, it will make sure the message is not corrupted.
+			 */
+			if(checkChecksum(receivedMessage)==true)
 			{
-
-				connect.close();
-				out.close();     // closes connections
-				in.close();
+				System.out.println("The received message is " + receivedMessage + ".\n");
 			}
+			else
+			{
+				System.out.println("The receive message has been corrupted");
+			}
+
+
+
+//			if(dataContent==10)
+//			{
+//
+//				connect.close();
+//				out.close();     // closes connections
+//				in.close();
+//			}
 			dataContent++;
 
 
@@ -86,16 +88,18 @@ public static void main(String args[]) throws IOException, InterruptedException
 {
 //	for(int i=0; i<4; i++)
 //	{
+		/**
+		 * Each client should keep sending out messages to random clients
+		 */
 		Client client1 = new Client(); // calls constructor for a new client
 
 //	}
-
 
 }
 
 /**
  * @author: Truc Chau
- * @return the random destination
+ * @return The random destination
  */
 public static int createRandomDestination()
 {
