@@ -171,7 +171,7 @@ public static int createRandomDestination()
 //<<<<<<< HEAD
         return rand.nextInt((4-1)+1)+4;
 //=======
-        return rand.nextInt((4-1)+1)+1;
+//        return rand.nextInt((4-1)+1)+1;
 //>>>>>>> origin/master
 
 }
