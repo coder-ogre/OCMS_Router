@@ -15,13 +15,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class Client extends Thread
 {
-<<<<<<< HEAD
+//<<<<<<< HEAD
     //String IPAddressLocalHost ="157.160.37.90";//local host
     //String IPAddressLocalHost = "127.0.0.1";
     String IPAddressLocalHost = "157.160.37.89";
-=======
-    String IPAddressLocalHost ="157.160.37.90";//local host
->>>>>>> origin/master
+//=======
+//    String IPAddressLocalHost ="157.160.37.90";//local host
+//>>>>>>> origin/master
     int port;
     private Socket connect;
     OCMS_Master_Runner master = OCMS_Master_Runner.getInstance();
@@ -39,11 +39,11 @@ public class Client extends Thread
         char ID = id;
         String message;
         char randomDest;
-<<<<<<< HEAD
+//<<<<<<< HEAD
 //        BufferedReader in;
-=======
+//=======
        // BufferedReader in;
->>>>>>> origin/master
+//>>>>>>> origin/master
 
         for(int dataContent = 1; dataContent<10; dataContent++) //Suppose each client sends out 10 messages
         {
@@ -53,20 +53,20 @@ public class Client extends Thread
              */
             connect = new Socket(IPAddressLocalHost, port); // attempts to ring the bell of this socket address
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
 //            /**
 //             * Receive the ID of the router
 //             */
 //            in = new BufferedReader(new InputStreamReader(connect.getInputStream())); // author Drew
 //            ID = in.readLine().charAt(0);  // author Drew
-=======
+//=======
             /**
              * Receive the ID of the router
              */
 //            in = new BufferedReader(new InputStreamReader(connect.getInputStream())); // author: Drew
 //            ID = in.readLine().charAt(0);  // author: Drew
 
->>>>>>> origin/master
+//>>>>>>> origin/master
 
             randomDest = (char)(createRandomDestination()+48);
 
@@ -85,17 +85,17 @@ public class Client extends Thread
             //If the checkChecksum function returns true, then print out the message
             BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
             String receivedMessage = in.readLine();
-<<<<<<< HEAD
+//<<<<<<< HEAD
 //
 //            /**
 //             * When client receives the message, it will make sure the message is not corrupted.
 //             */
-=======
+//=======
 
             /**
              * When client receives the message, it will make sure the message is not corrupted.
              */
->>>>>>> origin/master
+//>>>>>>> origin/master
 //            if(checkChecksum(receivedMessage)==true)
 //            {
                 master.println("The received message is " + receivedMessage + ".\n");
@@ -108,11 +108,11 @@ public class Client extends Thread
             TimeUnit.SECONDS.sleep(2); //send out message every 2 seconds
 
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
             //System.out.println(dataContent);
 
-=======
->>>>>>> origin/master
+//=======
+//>>>>>>> origin/master
                 //Close connection
                 connect.close();
                 out.close();
@@ -130,17 +130,17 @@ public static void main(String args[]) throws IOException, InterruptedException
         /**
          * Each client should keep sending out messages to random clients
          */
-<<<<<<< HEAD
+//<<<<<<< HEAD
         Client client1 = new Client('2', 3456); // calls constructor for a new client
-=======
-        Client client1 = new Client('1', 2345); // calls constructor for a new client
->>>>>>> origin/master
+//=======
+//        Client client1 = new Client('1', 2345); // calls constructor for a new client
+//>>>>>>> origin/master
 
 
 //    }
 
-<<<<<<< HEAD
-=======
+//<<<<<<< HEAD
+//=======
 }
 
 /**
@@ -153,7 +153,7 @@ public static int listeningRequest()
 {
 
 		return 0;
->>>>>>> origin/master
+//>>>>>>> origin/master
 }
 
 /**
@@ -168,11 +168,11 @@ public static int createRandomDestination()
          */
         Random rand = new Random();
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
         return rand.nextInt((4-1)+1)+4;
-=======
+//=======
         return rand.nextInt((4-1)+1)+1;
->>>>>>> origin/master
+//>>>>>>> origin/master
 
 }
 
