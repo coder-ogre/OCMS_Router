@@ -39,9 +39,7 @@ public class Client extends Thread
         char ID = id;
         String message;
         char randomDest;
-
-//        BufferedReader in;
-
+	
        // BufferedReader in;
 
         for(int dataContent = 1; dataContent<10; dataContent++) //Suppose each client sends out 10 messages
@@ -58,13 +56,6 @@ public class Client extends Thread
 //             */
 //            in = new BufferedReader(new InputStreamReader(connect.getInputStream())); // author Drew
 //            ID = in.readLine().charAt(0);  // author Drew
-
-            /**
-             * Receive the ID of the router
-             */
-//            in = new BufferedReader(new InputStreamReader(connect.getInputStream())); // author: Drew
-//            ID = in.readLine().charAt(0);  // author: Drew
-
 
 
             randomDest = (char)(createRandomDestination()+48);
