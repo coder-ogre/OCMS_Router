@@ -85,12 +85,6 @@ public class Client extends Thread
             BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
             String receivedMessage = in.readLine();
 
-//
-//            /**
-//             * When client receives the message, it will make sure the message is not corrupted.
-//             */
-
-
             /**
              * When client receives the message, it will make sure the message is not corrupted.
              */
