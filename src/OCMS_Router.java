@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -28,11 +29,13 @@ public class OCMS_Router extends Thread
      * So yes, only one listener is needed.  This is not some kind of linked list router chain.
      */
 
-    private int id;
+
 
     private Socket clientConnect; // the socket that will be open for communication with clients
     private ServerSocket clientServer; // listens for doorbells, and gives clientConnect a value if it hears one
     private Socket connectOut;
+    int port;
+    int id;
 
     private OCMS_AcceptConnectionThread clientHandler;
 
@@ -41,78 +44,53 @@ public class OCMS_Router extends Thread
     /*
      * this is the constructor for the java server
      * it initiates the value for the ServerSocket and number of clients
+     * @author Drew & Jessica
      */
-    public OCMS_Router(int id, String[] ipList)
+    public OCMS_Router(int id, int port) throws IOException
     {
-        try {
-            this.id = id;
+        clientServer = new ServerSocket(port); // listens on port for doorbells for the clients
+        this.port = port;
+        this.id = id;
 
-            clientServer = new ServerSocket(4446); // listens on port 4446 for doorbells for the clients
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
-
-    /*
-     * This overrides the default thread run method, so that when our Server runs with a thread,
-     * it processes our client's requests, and sends them to the thread that handles message reversal.
-     * (non-Javadoc)
-     * @see java.lang.Thread#run()
-     */
     @Override
     public void run()
     {
-        try {
-            System.out.println("listening...");
-            clientConnect = clientServer.accept();
-            //clientHandler = new OCMS_AcceptConnectionThread(clientConnect, id, this);
-            //clientHandler.start();
+        while (true) {
+            master.println("Router " + id + " listening...");
+            try {
+                clientConnect = clientServer.accept();
+                (new OCMS_AcceptConnectionThread(clientConnect, id, this)).start();
 
+                // sends to client the ID of the router, for the client to use it as their own ID
+                //PrintWriter out = new PrintWriter(clientConnect.getOutputStream(), true);
+                //char idChar = (char)(id + 48);
+                //out.println(id);
 
-
-
-
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientConnect.getInputStream())); // reads packet
-
-            String message = in.readLine(); // reads message in from the client
-            System.out.println(message);
-
-            int nextRouter;
-
-            if((int)message.charAt(2) == id)
-            {
-                nextRouter = id;
-                connectOut = new Socket(master.getIp(nextRouter), 4446); // attempts to ring the bell of this socket address
-            }
-            else if((int)message.charAt(2) == master.getLeftConnection(id))
-            {
-                nextRouter = master.getLeftConnection(id);
-                connectOut = new Socket(master.getIp(nextRouter), 3336); // attempts to ring the bell of this socket address
-            }
-            else
-            {
-                nextRouter = master.getRightConnection(id);
-                connectOut = new Socket(master.getIp(nextRouter), 4446); // attempts to ring the bell of this socket address
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
 
-            PrintWriter out = new PrintWriter(connectOut.getOutputStream(), true);// sends out to client
-
-            out.println(message); // sends to client's own server, to be sent out to another server
-
-            //clientConnect.close();
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
+    }
+
+    public int getPort()
+    {
+        return port;
+    }
+
+    public InetAddress getInetAddress()
+    {
+        return clientServer.getInetAddress();
+    }
+
+    public void println(String message)
+    {
+        System.out.println(message);
+    }
+
 }
+
+
