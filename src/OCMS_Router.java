@@ -1,9 +1,3 @@
-/*
- * Olah, Chau, Misicko, and Schlesiger.
- * OCMS Router
- */
-
-// plan: have clients connect through port 4446, and servers connect through port 3336.
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,7 +8,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 /*
- * server class
+ * router class to listen to clients and handle communication in parallel using threads
+ * @author: Drew Misicko
  */
 public class OCMS_Router extends Thread
 {
@@ -28,9 +23,6 @@ public class OCMS_Router extends Thread
      * That is why routers have to be able to accept connections from other routers, too.
      * So yes, only one listener is needed.  This is not some kind of linked list router chain.
      */
-
-
-
     private Socket clientConnect; // the socket that will be open for communication with clients
     private ServerSocket clientServer; // listens for doorbells, and gives clientConnect a value if it hears one
     private Socket connectOut;
@@ -39,58 +31,58 @@ public class OCMS_Router extends Thread
 
     private OCMS_AcceptConnectionThread clientHandler;
 
-    OCMS_Master_Runner master = OCMS_Master_Runner.getInstance();
+    OCMS_Router_Admin master = OCMS_Router_Admin.getInstance();
 
     /*
-     * this is the constructor for the java server
-     * it initiates the value for the ServerSocket and number of clients
-     * @author Drew & Jessica
+     * initiates parameters for my router
+     * @author Drew Misicko
      */
     public OCMS_Router(int id, int port) throws IOException
     {
         clientServer = new ServerSocket(port); // listens on port for doorbells for the clients
         this.port = port;
         this.id = id;
-
     }
 
+    /*
+     * Overrides run method so that the router accepts connections from the clients.
+     * This NEEDS to be threaded, because if it is not, then only one connection can be listened to at a time.
+     * I tried taking advice saying this didn't need to be threaded, and when I did, it did not work as it should have.
+     * @author Drew Misicko
+     */
     @Override
     public void run()
     {
-        while (true) {
-            master.println("Router " + id + " listening...");
+        while (true) 
+        {
+            //master.println("Router " + id + " listening");
             try {
                 clientConnect = clientServer.accept();
                 (new OCMS_AcceptConnectionThread(clientConnect, id, this)).start();
-
-                // sends to client the ID of the router, for the client to use it as their own ID
-                //PrintWriter out = new PrintWriter(clientConnect.getOutputStream(), true);
-                //char idChar = (char)(id + 48);
-                //out.println(id);
-
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
+        }
     }
-    }
 
+    /*
+     * sometimes other parts of the application need to know a router's port number it's listening on (especially the client)
+     * When they need to, they just ask.
+     * @author: Drew Misicko
+     */
     public int getPort()
     {
         return port;
     }
 
+    /*
+     * Asks a router for its IP address
+     * @author: Drew Misicko
+     */
     public InetAddress getInetAddress()
     {
         return clientServer.getInetAddress();
     }
-
-    public void println(String message)
-    {
-        System.out.println(message);
-    }
-
 }
-
 

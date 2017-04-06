@@ -1,5 +1,5 @@
 /*
- * @authors Drew Misicko and Truc Chau
+ * @author: Truc Chau
  */
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,19 +12,17 @@ import java.util.concurrent.TimeUnit;
 
 /*
  * Client class
+ * Creates messages and sends them out to routers.  Receives messages from local router when assigned as the designated client.
+ * @author Truc Chau
  */
 public class Client extends Thread
 {
-//<<<<<<< HEAD
     //String IPAddressLocalHost ="157.160.37.90";//local host
-    //String IPAddressLocalHost = "127.0.0.1";
-    String IPAddressLocalHost = "157.160.37.89";
-//=======
-//    String IPAddressLocalHost ="157.160.37.90";//local host
-//>>>>>>> origin/master
+    String IPAddressLocalHost = "127.0.0.1";
+    //String IPAddressLocalHost = "157.160.37.89";
     int port;
     private Socket connect;
-    OCMS_Master_Runner master = OCMS_Master_Runner.getInstance();
+    static OCMS_Router_Admin master = OCMS_Router_Admin.getInstance();
 
     /**
      * Constructor for Basic Client, includes code to be executed upon instantiation
@@ -39,11 +37,7 @@ public class Client extends Thread
         char ID = id;
         String message;
         char randomDest;
-//<<<<<<< HEAD
 //        BufferedReader in;
-//=======
-       // BufferedReader in;
-//>>>>>>> origin/master
 
         for(int dataContent = 1; dataContent<10; dataContent++) //Suppose each client sends out 10 messages
         {
@@ -53,21 +47,6 @@ public class Client extends Thread
              */
             connect = new Socket(IPAddressLocalHost, port); // attempts to ring the bell of this socket address
 
-//<<<<<<< HEAD
-//            /**
-//             * Receive the ID of the router
-//             */
-//            in = new BufferedReader(new InputStreamReader(connect.getInputStream())); // author Drew
-//            ID = in.readLine().charAt(0);  // author Drew
-//=======
-            /**
-             * Receive the ID of the router
-             */
-//            in = new BufferedReader(new InputStreamReader(connect.getInputStream())); // author: Drew
-//            ID = in.readLine().charAt(0);  // author: Drew
-
-//>>>>>>> origin/master
-
             randomDest = (char)(createRandomDestination()+48);
 
             message = generateMessage(ID,randomDest,(char)(dataContent+48),(char)(dataContent+48));
@@ -76,29 +55,19 @@ public class Client extends Thread
             PrintWriter out = new PrintWriter(connect.getOutputStream(), true);
             out.println(message); // sends out message to server
 
-            //Print out the message and destination IP Address
-            master.println("Client " + id + " sending message "+ message+" to "+randomDest);
-
-
-
             //Receive message from another client and do the check sum
             //If the checkChecksum function returns true, then print out the message
             BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
             String receivedMessage = in.readLine();
-//<<<<<<< HEAD
+            
+          //Print out the message and destination IP Address
 //
 //            /**
 //             * When client receives the message, it will make sure the message is not corrupted.
 //             */
-//=======
-
-            /**
-             * When client receives the message, it will make sure the message is not corrupted.
-             */
-//>>>>>>> origin/master
 //            if(checkChecksum(receivedMessage)==true)
 //            {
-                master.println("The received message is " + receivedMessage + ".\n");
+//                master.println("The received message is " + receivedMessage + ".\n");
 //            }
 //            else
 //            {
@@ -108,11 +77,8 @@ public class Client extends Thread
             TimeUnit.SECONDS.sleep(2); //send out message every 2 seconds
 
 
-//<<<<<<< HEAD
             //System.out.println(dataContent);
 
-//=======
-//>>>>>>> origin/master
                 //Close connection
                 connect.close();
                 out.close();
@@ -122,38 +88,20 @@ public class Client extends Thread
 
 }
 
-
 public static void main(String args[]) throws IOException, InterruptedException
 {
-//    for(int i=0; i<4; i++)
-//    {
         /**
          * Each client should keep sending out messages to random clients
          */
-//<<<<<<< HEAD
-        Client client1 = new Client('2', 3456); // calls constructor for a new client
-//=======
-//        Client client1 = new Client('1', 2345); // calls constructor for a new client
-//>>>>>>> origin/master
 
+         // Help with trying to run this command, please.  Just get null pointer exception. - Drew
+        // Client client1 = new Client('2', master.getRouter(2).getPort()); // calls constructor for a new client
 
-//    }
-
-//<<<<<<< HEAD
-//=======
-}
-
-/**
- * get the port number from one of the routers
- * return that number
- * make new connection to receive the message
- * @return
- */
-public static int listeningRequest()
-{
-
-		return 0;
-//>>>>>>> origin/master
+        // until I fix null pointer exception, it will need to be hardcoded: - Drew
+        Client client1 = new Client('1', 2345);
+        Client client2 = new Client('2', 3456);
+        Client client3 = new Client('3', 4567);
+        Client client4 = new Client('4', 5678);
 }
 
 /**
@@ -162,18 +110,12 @@ public static int listeningRequest()
  */
 public static int createRandomDestination()
 {
-        /**
-         * Create random destinations
-         * Pick any number from 1-4
-         */
-        Random rand = new Random();
-
-//<<<<<<< HEAD
-        return rand.nextInt((4-1)+1)+4;
-//=======
-//        return rand.nextInt((4-1)+1)+1;
-//>>>>>>> origin/master
-
+    /**
+     * Create random destinations
+     * Pick any number from 1-4
+     */
+	int rand = (new Random()).nextInt((4-1)+1);
+    return (rand == 0)? 4:rand;
 }
 
 /**
