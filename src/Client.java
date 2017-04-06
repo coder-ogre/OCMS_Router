@@ -17,9 +17,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class Client extends Thread
 {
+<<<<<<< HEAD
     //String IPAddressLocalHost ="157.160.37.90";//local host
     String IPAddressLocalHost = "127.0.0.1";
     //String IPAddressLocalHost = "157.160.37.89";
+=======
+
+    //String IPAddressLocalHost ="157.160.37.90";//local host
+    //String IPAddressLocalHost = "127.0.0.1";
+    String IPAddressLocalHost = "157.160.37.89";
+
+//    String IPAddressLocalHost ="157.160.37.90";//local host
+
+>>>>>>> origin/master
     int port;
     private Socket connect;
     static OCMS_Router_Admin master = OCMS_Router_Admin.getInstance();
@@ -37,7 +47,12 @@ public class Client extends Thread
         char ID = id;
         String message;
         char randomDest;
+<<<<<<< HEAD
 //        BufferedReader in;
+=======
+	
+       // BufferedReader in;
+>>>>>>> origin/master
 
         for(int dataContent = 1; dataContent<10; dataContent++) //Suppose each client sends out 10 messages
         {
@@ -47,6 +62,17 @@ public class Client extends Thread
              */
             connect = new Socket(IPAddressLocalHost, port); // attempts to ring the bell of this socket address
 
+<<<<<<< HEAD
+=======
+
+//            /**
+//             * Receive the ID of the router
+//             */
+//            in = new BufferedReader(new InputStreamReader(connect.getInputStream())); // author Drew
+//            ID = in.readLine().charAt(0);  // author Drew
+
+
+>>>>>>> origin/master
             randomDest = (char)(createRandomDestination()+48);
 
             message = generateMessage(ID,randomDest,(char)(dataContent+48),(char)(dataContent+48));
@@ -59,12 +85,20 @@ public class Client extends Thread
             //If the checkChecksum function returns true, then print out the message
             BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
             String receivedMessage = in.readLine();
+<<<<<<< HEAD
             
           //Print out the message and destination IP Address
 //
 //            /**
 //             * When client receives the message, it will make sure the message is not corrupted.
 //             */
+=======
+
+            /**
+             * When client receives the message, it will make sure the message is not corrupted.
+             */
+
+>>>>>>> origin/master
 //            if(checkChecksum(receivedMessage)==true)
 //            {
 //                master.println("The received message is " + receivedMessage + ".\n");
@@ -76,7 +110,10 @@ public class Client extends Thread
 
             TimeUnit.SECONDS.sleep(2); //send out message every 2 seconds
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
             //System.out.println(dataContent);
 
                 //Close connection
@@ -93,6 +130,7 @@ public static void main(String args[]) throws IOException, InterruptedException
         /**
          * Each client should keep sending out messages to random clients
          */
+<<<<<<< HEAD
 
          // Help with trying to run this command, please.  Just get null pointer exception. - Drew
         // Client client1 = new Client('2', master.getRouter(2).getPort()); // calls constructor for a new client
@@ -102,6 +140,28 @@ public static void main(String args[]) throws IOException, InterruptedException
         Client client2 = new Client('2', 3456);
         Client client3 = new Client('3', 4567);
         Client client4 = new Client('4', 5678);
+=======
+
+        Client client1 = new Client('2', 3456); // calls constructor for a new client
+
+//        Client client1 = new Client('1', 2345); // calls constructor for a new client
+
+//    }
+
+}
+
+/**
+ * get the port number from one of the routers
+ * return that number
+ * make new connection to receive the message
+ * @return
+ */
+public static int listeningRequest()
+{
+
+		return 0;
+
+>>>>>>> origin/master
 }
 
 /**
@@ -110,12 +170,27 @@ public static void main(String args[]) throws IOException, InterruptedException
  */
 public static int createRandomDestination()
 {
+<<<<<<< HEAD
     /**
      * Create random destinations
      * Pick any number from 1-4
      */
 	int rand = (new Random()).nextInt((4-1)+1);
     return (rand == 0)? 4:rand;
+=======
+        /**
+         * Create random destinations
+         * Pick any number from 1-4
+         */
+        Random rand = new Random();
+
+
+        return rand.nextInt((4-1)+1)+4;
+
+//        return rand.nextInt((4-1)+1)+1;
+
+
+>>>>>>> origin/master
 }
 
 /**
