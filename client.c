@@ -2,7 +2,7 @@
  * client.c
  *
  *  Created on: Apr 4, 2017
- *  @Author: tc9538
+ *  @Author: Truc Chau
  *      					*/
 
 #include<stdio.h>
@@ -14,6 +14,7 @@
 #include<unistd.h>
 #include<string.h>
 #include <time.h>
+#include<math.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -22,95 +23,85 @@
 int invertBinary(char* byte, unsigned char* invertedBinary);
 int checkChecksum(char* message);
 unsigned char generateChecksum(unsigned char sumValue);
-int generateMessage(char ID, char destination, char data1, char data2, unsigned char* message);
+int generateMessage(char ID, char destination, char data1, char data2, char* message);
 
 void printMessage(char a[]);
 
 //Client sets up to connect to server and communicate in main method
-int main()
+int main(int argc, char *argv[])
 {
-	/**
-	 * Testing the code
-
-		char ID='1', destination='4'; // The client's ID
-		unsigned char message[10];
-		generateMessage(ID, destination, 't', 'z', message);
-
-		// This should be true (1)
-		printf("Message: %s\n\tCorrect Checksum?: %d\n", message, checkChecksum(message));
-		// This should be false (0)
-		printf("Message: %s\n\tCorrect Checksum?: %d\n", "14ytz", checkChecksum("14ytz"));
-	*/
-
-  struct sockaddr_in sock;
-  int serverSocket=socket(AF_INET,SOCK_STREAM,0);
-  unsigned char message[5];
-  char messageFromServer[100];
-
-  memset(&sock, '\0', sizeof(sock));
-  memset(&message, '\0', sizeof(message));
-
-
-  //Should return a non-negative value -> success to create connection
-  if(connect(serverSocket,(struct sockaddr*)&sock,sizeof(sock))>=0)
-  {
-      printf("Connected to server #%d... \n",serverSocket);
-
-      /***Set up base socket***/
-        sock.sin_addr.s_addr=inet_addr("127.0.0.1");
-        sock.sin_family=AF_INET;
-        sock.sin_port= htons(4446); //port number
-
-      //Get input string from users (should be 10 characters)
-      /*
-      memset(receiveBuff,'\0', sizeof(receiveBuff));
-      printf("Enter a string has extacly 10 characters: ");
-      fgets(receiveBuff,21,stdin);
-      */
 
       int dataContent =1;
-      char clientID='1';
 
-      //random destination
-      srand(time(NULL));
-      int randomDest = rand()%4; // choose random number for dest from 0 to 3
-
-      
-      int check;
       while(dataContent!=10)
       {
-          check = generateMessage('1', randomDest, dataContent, dataContent, message);
-          sleep(2); //wait 2 seconds to send next message
+           struct sockaddr_in sock;
+           int serverSocket=socket(AF_INET,SOCK_STREAM,0);
+           char message[5];
+           char messageFromServer[5];
 
-           //Send the message to server
-          write(serverSocket,message,5);
-          printMessage(message);
+            memset(&sock, '\0', sizeof(sock));
 
-          dataContent++;
-      }
 
-      //Read the msg from the router
-      read(serverSocket,messageFromServer,11);
-      printf("***Message (client): %s***\n",messageFromServer);
 
-      close(serverSocket);
-  }
-  else
-  {
-      printf("Creating socket failed...\n");
-  }
+                /***Set up base socket***/
+                  sock.sin_addr.s_addr=inet_addr("localhost");
+                  sock.sin_family=AF_INET;
+                  sock.sin_port= htons(4446); //port number
+
+          if(connect(serverSocket,(struct sockaddr*)&sock,sizeof(sock))>=0)
+          {
+              printf("Connected to server #%d... \n",serverSocket);
+
+              char clientID='1';
+              //random destination
+              srand(time(NULL));
+              int randomDest = rand()%4; // choose random number for dest from 0 to 3
+
+              int check;
+              check = generateMessage(clientID, (char)randomDest, dataContent, dataContent, message);
+
+                if(check==0)
+                {
+                    printf("Message is created\n");
+                }
+                sleep(2); //wait 2 seconds to send next message
+
+               //Send the message to server
+              if( write(serverSocket,&message,strlen(message)) <0)
+              printf("ERROR writing to socket");
+
+
+                //Read the msg from the router
+               read(serverSocket,messageFromServer,6);
+               printf("***Message (client): %s***\n",messageFromServer);
+
+               close(serverSocket);
+            }
+
+             else
+              {
+                  printf("Creating socket failed...\n");
+              }
+
+                dataContent++;
+
+
+          } //end of while loop
+
+
   return 0;
 }
 
 
 /**
- * Print out the message
+ * This method prints out what is stored in the message
  * @author: Truc Chau
  */
 void printMessage(char a[])
 {
     int i;
-    printf("Message is %s ");
+    printf("Message is ");
     for(i =0; i<5; i++)
     {
           printf(" %c. ", a[i]);
@@ -169,7 +160,7 @@ unsigned char generateChecksum(unsigned char sumValue) {
 	for (i=0;i<8;i++)
 	{
 		// Converts one piece at a time; 48 is the value of 0 in a char
-		checksum=checksum+(pow(2, 7-i)*(int)(invertedBinary[i]-48));
+		checksum=checksum+((pow(2, 7-i))*(int)(invertedBinary[i]-48));
 	}
 	return checksum;
 }
@@ -179,7 +170,7 @@ unsigned char generateChecksum(unsigned char sumValue) {
 * Generates the compete message (including checksum) based on the given data
 * @author Jessica Schlesiger
 **/
-int generateMessage(char ID, char destination, char data1, char data2, unsigned char* message)
+int generateMessage(char ID, char destination, char data1, char data2, char* message)
 {
 	unsigned char sumValue = ID+destination+data1+data2; // What all the bytes add up to
 	unsigned char checksum=generateChecksum(sumValue);
@@ -213,3 +204,4 @@ int invertBinary(char* byte, unsigned char* invertedBinary) {
 	}
 	return 0;
 }
+S
