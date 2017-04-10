@@ -1,111 +1,147 @@
 /*
- * @authors Drew Misicko and Truc Chau
+ * Client in Java
+ * @author: Truc Chau
  */
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 /*
  * Client class
+ * Creates messages and sends them out to routers.  Receives messages from local router when assigned as the designated client.
+ * @author Truc Chau
  */
 public class Client extends Thread
 {
-	String IPAddressLocalHost ="127.0.0.1";//local host
-	private Socket connect;
-	/**
-	 * Constructor for Basic Client, includes code to be executed upon instantiation
-	 */
-	public Client() throws IOException, InterruptedException
-	{
-		/**
-		 * Making connection
-		 */
+    String IPAddressLocalHost = null;
+    char ID;
+    int port;
+    private Socket connect;
+    static OCMS_Router_Admin master = OCMS_Router_Admin.getInstance();
 
-		//System.out.println("Welcome to 127.0.0.1!");
-		//System.out.println(connect);
-		/**
-		 * The data of the content will increase by 1.
-		 */
-		char ID='1';
-		String message;
-		char randomDest;
-		//int dataContent=1;
-		for(int dataContent = 1; dataContent<10; dataContent++) //Suppose each client sends out 10 messages
-		{
+    /**
+     * Constructor for Basic Client, includes code to be executed upon instantiation
+     * @author: Truc Chau
+     */
+    public Client(char id, int port, String ip) throws IOException, InterruptedException
+    {
+        this.IPAddressLocalHost = ip;
+        this.port = port;
 
-			connect = new Socket(IPAddressLocalHost, 4446); // attempts to ring the bell of this socket address, 127.0.0.1:4446
-			randomDest = (char)(createRandomDestination()+48);
-
-			message = generateMessage(ID,randomDest,(char)(dataContent+48),(char)(dataContent+48));
-
-			//Send out message
-			PrintWriter out = new PrintWriter(connect.getOutputStream(), true);
-			out.println(message); // sends out message to server
-
-			//Print out the message and destination IP Address
-			System.out.println("Sending message "+ message+" to "+randomDest);
-
-			TimeUnit.SECONDS.sleep(2); //send out message every 2 seconds
-
-			//Receive message from another client and do the check sum
-			//If the checkChecksum function returns true, then print out the message
-			BufferedReader in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
-			String receivedMessage = in.readLine();
-
-//			if(checkChecksum(receivedMessage)==true)
-//			{
-				System.out.println("The received message is " + receivedMessage + ".\n");
-//			}
-//			else
-//			{
-				System.out.println("The receive message has been corrupted");
-//			}
-
-				System.out.println(connect);
-
-			if(dataContent==10)
-			{
-
-				connect.close();
-				out.close();     // closes connections
-				in.close();
-			}
-			dataContent++;
-
-
-		}
-
+        /**
+         * The data of the content will increase by 1.
+         */
+         ID = id;
 }
 
-public static void main(String args[]) throws IOException, InterruptedException
-{
-//	for(int i=0; i<4; i++)
-//	{
-		Client client1 = new Client(); // calls constructor for a new client
+    /**
+     * @author: Truc Chau
+     * sends out a message to process, and receives any data coming from its router
+     */
+    @Override
+    public void run()
+    {
+        String message;
+        char randomDest;
+        int dataContent;
+        Random rand = new Random();    // this bit of code sets dataContent to a random number between 1 and 10
+        dataContent = (rand.nextInt((10-1)+1) + 1);
+        /**
+         * Making connection
+         * choose randomly port number to connect to
+         */
+        try {
+            connect = new Socket(IPAddressLocalHost, port);
+        } catch (UnknownHostException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } // attempts to ring the bell of this socket address
 
-//	}
+        randomDest = (char)(createRandomDestination()+48);
+
+        message = generateMessage(ID,randomDest,(char)(dataContent+48),(char)(dataContent+48));
+        
+        PrintWriter out = null;
+        try {
+            //Send out message
+            
+            out = new PrintWriter(connect.getOutputStream(), true);
+            out.println(message); // sends out message to server
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+
+        //Print out the message and destination IP Address
+        master.println("Client " + ID + " sending message "+ message+" to "+randomDest);
 
 
-}
+        String receivedMessage = null;
+        //Receive message from another client and do the check sum
+        //If the checkChecksum function returns true, then print out the message
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+            receivedMessage = in.readLine();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+
+        /**
+         * When client receives the message, it will make sure the message is not corrupted.
+         */
+        if(checkChecksum(receivedMessage)==true)
+        {
+            master.println("The received message is " + receivedMessage + ".\n");
+        }
+        else
+        {
+            System.out.println("The receive message has been corrupted");
+        }
+
+        try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } //send out message every 2 seconds
+
+        //Close connection
+        try {
+            connect.close();
+            out.close();
+            in.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
 /**
  * @author: Truc Chau
- * @return the random destination
+ * @return The random destination
  */
 public static int createRandomDestination()
 {
-		/**
-		 * Create random destinations
-		 * Pick any number from 2-4
-		 */
-		Random rand = new Random();
-
-		return rand.nextInt((4-2)+1)+2;
+        /**
+         * Create random destinations
+         * Pick any number from 1-4
+         */
+        Random rand = new Random();
+        //System.out.println("The number of clients according the the client class is " + master.getNumberOfClients());
+        return (rand.nextInt((master.getNumberOfClients()-1)+1) + 1);
 
 }
 
@@ -117,33 +153,33 @@ public static int createRandomDestination()
  */
 static boolean checkChecksum(String message)
 {
-	int locationOfChecksum = 2;
-	String checksum = addLeadingZeros(Integer.toBinaryString(message.charAt(locationOfChecksum)));
+    int locationOfChecksum = 2;
+    String checksum = addLeadingZeros(Integer.toBinaryString(message.charAt(locationOfChecksum)));
 
-	StringBuilder msg = new StringBuilder(message);
-	message = msg.deleteCharAt(locationOfChecksum).toString(); // deletes the checksum character
-	char[] chars= new char[4];
-	for (int i=0;i<4;i++) // grabs each character individually
-	{
-		//System.out.println(addLeadingZeros(Integer.toBinaryString((char)message.charAt(i))));
-		chars[i] = message.charAt(i);
-	}
-	String charSum=Integer.toBinaryString(chars[0]+chars[1]+chars[2]+chars[3]);
-	if (charSum.length() > 8) // carries the 1
-	{
-		charSum = Integer.toBinaryString((chars[0]+chars[1]+chars[2]+chars[3])+1);
-		charSum = addLeadingZeros(charSum.substring(1,8));
-	}
-//	System.out.println(charSum);
-//	System.out.println(checksum);
+    StringBuilder msg = new StringBuilder(message);
+    message = msg.deleteCharAt(locationOfChecksum).toString(); // deletes the checksum character
+    char[] chars= new char[4];
+    for (int i=0;i<4;i++) // grabs each character individually
+    {
+        //System.out.println(addLeadingZeros(Integer.toBinaryString((char)message.charAt(i))));
+        chars[i] = message.charAt(i);
+    }
+    String charSum=Integer.toBinaryString(chars[0]+chars[1]+chars[2]+chars[3]);
+    if (charSum.length() > 8) // carries the 1
+    {
+        charSum = Integer.toBinaryString((chars[0]+chars[1]+chars[2]+chars[3])+1);
+        charSum = addLeadingZeros(charSum.substring(1,8));
+    }
+//    System.out.println(charSum);
+//    System.out.println(checksum);
 
-	for (int i=0;i<8;i++)
-	{
-		if (charSum.charAt(i) != '1')
-			if (checksum.charAt(i) != '1')
-				return false;
-	}
-	return true;
+    for (int i=0;i<8;i++)
+    {
+        if (charSum.charAt(i) != '1')
+            if (checksum.charAt(i) != '1')
+                return false;
+    }
+    return true;
 }
 /**
  * Generates the message to be sent to other clients
@@ -156,27 +192,27 @@ static boolean checkChecksum(String message)
  */
 static String generateMessage(char ID, char destination, char data1, char data2)
 {
-	// Creates checksum
-	String checksum = Integer.toBinaryString((ID+destination+data1+data2)); // adds the two characters then converts to binary
-	if (checksum.length()>8) // if we have a 9th 1, then it carries the 1
-	{
-		checksum = Integer.toBinaryString((ID+destination+data1+data2)+1);
-		checksum= checksum.substring(1,8);
-	}
-	checksum = addLeadingZeros(checksum); // adds leading zeros
-	checksum = invertBinary(checksum); // inverts binary
-	int parseInt = Integer.parseInt(checksum, 2); // converts to an integer
-	char checkSumCharacter = (char)parseInt; // converts to a character
+    // Creates checksum
+    String checksum = Integer.toBinaryString((ID+destination+data1+data2)); // adds the two characters then converts to binary
+    if (checksum.length()>8) // if we have a 9th 1, then it carries the 1
+    {
+        checksum = Integer.toBinaryString((ID+destination+data1+data2)+1);
+        checksum= checksum.substring(1,8);
+    }
+    checksum = addLeadingZeros(checksum); // adds leading zeros
+    checksum = invertBinary(checksum); // inverts binary
+    int parseInt = Integer.parseInt(checksum, 2); // converts to an integer
+    char checkSumCharacter = (char)parseInt; // converts to a character
 
-//	 for debugging, prints out all binary values
-//	System.out.println(addLeadingZeros(Integer.toBinaryString(ID)));
-//	System.out.println(addLeadingZeros(Integer.toBinaryString(destination)));
-//	System.out.println(addLeadingZeros(Integer.toBinaryString(data1)));
-//	System.out.println(addLeadingZeros(Integer.toBinaryString(data2)));
-//	System.out.println(checksum);
+//     for debugging, prints out all binary values
+//    System.out.println(addLeadingZeros(Integer.toBinaryString(ID)));
+//    System.out.println(addLeadingZeros(Integer.toBinaryString(destination)));
+//    System.out.println(addLeadingZeros(Integer.toBinaryString(data1)));
+//    System.out.println(addLeadingZeros(Integer.toBinaryString(data2)));
+//    System.out.println(checksum);
 
-	String message=""+ID+""+destination+checkSumCharacter+data1+data2; // assembles message
-	return message;
+    String message=""+ID+""+destination+checkSumCharacter+data1+data2; // assembles message
+    return message;
 }
 /**
  * Replaces all 1's with 0's, and 0's with 1's
@@ -186,7 +222,7 @@ static String generateMessage(char ID, char destination, char data1, char data2)
  */
 static String invertBinary(String checksum)
 {
-	return checksum.replace('0', '2').replace('1', '0').replace('2', '1');
+    return checksum.replace('0', '2').replace('1', '0').replace('2', '1');
 }
 /**
  * Returns a binary string of a character
@@ -196,7 +232,7 @@ static String invertBinary(String checksum)
  */
 static String convertToBinary(char character)
 {
-	return Integer.toBinaryString(character);
+    return Integer.toBinaryString(character);
 }
 /**
  * adds the leading zeros to our binary value
@@ -206,14 +242,12 @@ static String convertToBinary(char character)
  */
 static String addLeadingZeros(String binaryString)
 {
-	int leadingZeros = 8-binaryString.length();
-	String zeros="";
-	for (int i=0;i<leadingZeros;i++)
-	{
-		zeros+='0';
-	}
-	return zeros+binaryString;
+    int leadingZeros = 8-binaryString.length();
+    String zeros="";
+    for (int i=0;i<leadingZeros;i++)
+    {
+        zeros+='0';
+    }
+    return zeros+binaryString;
 }
 }
-
-
