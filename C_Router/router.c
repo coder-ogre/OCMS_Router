@@ -7,6 +7,10 @@
 #include <string.h>
 #include <sys/types.h>
 #include <pthread.h>
+#include <math.h>
+
+#define TRUE 1
+#define FALSE 0
 
 /**
 * A router that will receive messages from clients/routers and then forward
@@ -15,7 +19,10 @@
 */
 
 void* handleConnection(void *arg);
-int validateChecksum(char sum);
+int invertBinary(char* byte, unsigned char* invertedBinary);
+int checkChecksum(char* message);
+unsigned char generateChecksum(unsigned char sumValue);
+
 
 int main(int argc, char *argv[])
 {
@@ -51,9 +58,13 @@ int main(int argc, char *argv[])
 	{
 		int clientLen = sizeof(clientInfo);
 		connectingSocket = accept(listeningSocket, (struct sockaddr*)&clientInfo,(socklen_t*)&clientLen);
+		printf("received connection request");
+		char readBuffer[6];
+		memset(readBuffer,'\0',sizeof(readBuffer));
+		read(connectingSocket,readBuffer,sizeof(readBuffer));
 		
 		pthread_t thread;
-		pthread_create(&thread,NULL,handleConnection,(void *)connectingSocket);
+		pthread_create(&thread,NULL,handleConnection,(void *)readBuffer);
 	}
 
 }
@@ -64,23 +75,22 @@ int main(int argc, char *argv[])
 */
 void* handleConnection(void *arg)
 {
-	//Stores the socket that this thread communicates on.
-	int inSocket = (int)arg;
 	puts("Thread Made");
   
 	//Creates two character arrays to hold incomming and outgoing messages.
 	char readBuffer[6];
+	strcpy(readBuffer,arg);
 	char sendBuffer[6];
 
 	//Sets the memory of the character arrays to null terminators.
-	memset(readBuffer,'\0',sizeof(readBuffer));
+	//memset(readBuffer,'\0',sizeof(readBuffer));
 	memset(sendBuffer,'\0',sizeof(sendBuffer));
 		
 	//for(int i = 0; i < 10; i++)
 	{	
 		int portNumber;
 		//Reads in the send characer array and stores it.
-		read(inSocket,readBuffer,sizeof(readBuffer));
+		//read(inSocket,readBuffer,sizeof(readBuffer));
 		
 		char source = readBuffer[0];
 		char destination = readBuffer[1];
@@ -93,7 +103,7 @@ void* handleConnection(void *arg)
 
 		printf("Checking the checksum...\n");
 		//Checksum validation still needed.
-		if(validateChecksum(checksum))
+		if(checkChecksum(readBuffer))
 		{	
 			printf("Checksum 'valid' (currently unchecked).\n");
 			int destInt = destination - '0'; //The overall target as an integer. Used to find where to send to from the routing table.
@@ -147,21 +157,94 @@ void* handleConnection(void *arg)
 			}
 			printf("Sending the message to %i",destInt);
 			write(routerSocket,readBuffer,sizeof(readBuffer));
+			close(routerSocket);
 		}
 		else
 		{
 			printf("Checksum failed. Closing Thread.");
 			pthread_exit(NULL);
+		
 				
 		}
 	}
 	puts("Thread Closing");
 	pthread_exit(NULL);
-	close(socket);
+	
 }
 
-int validateChecksum(char sum)
-{
+/**
+* Validates the checksum of a message 
+* @author Jessica Schlesiger
+**/
+int checkChecksum(char* message) {
+	unsigned char checksum = message[2]; // Checksum of the message
+	unsigned char sumValue = message[0]+message[1]+message[3]+message[4]; // sum of the data in the message
 	
-	return 1;
+  // ****** Used for debugging
+	//printf("%s\n%d %d %d %d %d\nChecksum: %c, %d | Sumvalue: %c, %d\n",message, message[0], message[1], checksum, message[3], message[4], checksum, checksum, sumValue, sumValue);
+	
+ // Generates correct checksum
+	unsigned char correctChecksum = generateChecksum(sumValue);
+	
+ // Checks if the checksum is correct
+	if (checksum == correctChecksum)
+	{
+		return TRUE;
+	}
+	return FALSE;
 }
+
+
+/**
+* Creates a checksum based on the sumValue of the message
+* @author Jessica Schlesiger
+**/
+unsigned char generateChecksum(unsigned char sumValue) 
+{
+	unsigned char binary[8];
+	static unsigned char byte[8];
+	unsigned char i;
+	for(i = 0; i < 8; i++) // converts sum to binary, is reversed
+	{
+		byte[i] = '0' + ((sumValue & (1 << i)) > 0);
+	}
+	for (i=0;i<8;i++) // fixes it being in reverse
+	{
+		binary[7-i]=byte[i];
+	}
+	
+	unsigned char invertedBinary[8];
+	invertBinary(binary, invertedBinary);
+
+  // ****** Used for debugging
+	//printf("Binary: \t%s\n", binary); // before invert
+	//printf("Inverted:\t%s\n", invertedBinary); // is inverted
+	
+	// Converts the invertedBinary to an integer value
+	unsigned char checksum=0;
+	for (i=0;i<8;i++)
+	{
+		// Converts one piece at a time; 48 is the value of 0 in a char
+		checksum=checksum+(pow(2, 7-i)*(int)(invertedBinary[i]-48));	
+	}
+	return checksum;
+}
+
+/**
+* Given a string of 8 bits, it inverts the 1's and 0's
+* @author Jessica Schlesiger
+**/
+int invertBinary(char* byte, unsigned char* invertedBinary) 
+{
+	int i;
+	for (i=0;i<8;i++) {
+		
+		if (byte[i] == '1') {
+			invertedBinary[i] = '0';
+		} else {
+			invertedBinary[i]='1';
+		}
+	}
+	return 0;
+}
+
