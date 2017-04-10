@@ -1,9 +1,8 @@
-/*
- * client.c
- *
+/**********************************
+ *  client.c
  *  Created on: Apr 4, 2017
  *  @Author: Truc Chau
- *      					*/
+ **********************************/
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -29,73 +28,92 @@ void printMessage(char a[]);
 
 //Client sets up to connect to server and communicate in main method
 int main(int argc, char *argv[])
-{
-
+{ 
       int dataContent =1;
-
+      srand(time(NULL));
+     
+     //Each client sends out 10 message. We can increase this number if we want to. 
       while(dataContent!=10)
       {
            struct sockaddr_in sock;
            int serverSocket=socket(AF_INET,SOCK_STREAM,0);
-           char message[5];
-           char messageFromServer[5];
-
+           char message[6];
+           char messageFromServer[6];
+      
             memset(&sock, '\0', sizeof(sock));
-
-
-
-                /***Set up base socket***/
-                  sock.sin_addr.s_addr=inet_addr("localhost");
-                  sock.sin_family=AF_INET;
-                  sock.sin_port= htons(4446); //port number
-
+            //memset(&message, '\0', sizeof(message));
+            
+            /***Set up base socket***/
+            sock.sin_addr.s_addr=inet_addr("localhost");
+            sock.sin_family=AF_INET;
+            sock.sin_port= htons(4446); //port number
+            //printf("socket? %d\n", serverSocket);
+      
+          //Should return a non-negative value -> success to create connection
           if(connect(serverSocket,(struct sockaddr*)&sock,sizeof(sock))>=0)
-          {
-              printf("Connected to server #%d... \n",serverSocket);
-
-              char clientID='1';
+          { 
+               printf("Connected to server #%d... \n",serverSocket);
+               char clientID='1';
+            
               //random destination
-              srand(time(NULL));
-              int randomDest = rand()%4; // choose random number for dest from 0 to 3
-
-              int check;
-              check = generateMessage(clientID, (char)randomDest, dataContent, dataContent, message);
-
+              int randomDest = (rand()%4)+1; // choose random number for dest from 0 to 3
+              while(randomDest==1)
+              {
+                  randomDest = (rand()%4)+1;
+              }
+              printf("Random dest = %d\n", randomDest);
+              
+                int check;
+             
+                check = generateMessage(clientID, (char)randomDest, dataContent, dataContent, message);
+                //printMessage(message);
+                
                 if(check==0)
                 {
                     printf("Message is created\n");
                 }
+                
                 sleep(2); //wait 2 seconds to send next message
-
-               //Send the message to server
-              if( write(serverSocket,&message,strlen(message)) <0)
-              printf("ERROR writing to socket");
-
-
+                
+                 //Send the message to server
+                 if( write(serverSocket,message,strlen(message)) <0)
+                 printf("ERROR writing to socket");
+                 
+                 
                 //Read the msg from the router
-               read(serverSocket,messageFromServer,6);
-               printf("***Message (client): %s***\n",messageFromServer);
-
-               close(serverSocket);
+                //Check if the received message is corrupted or not. If not, print it out.
+                  read(serverSocket,messageFromServer,6);
+                  if(checkChecksum(messageFromServer) ==1)
+                  {
+                      printf("***Message (client): %s***\n",messageFromServer);
+                  }
+                  
+                  else
+                  {
+                      printf("Message is corrupted\n");
+                  }
+                  
+                  close(serverSocket);
+                  
             }
-
+            
              else
-              {
+             {
                   printf("Creating socket failed...\n");
-              }
-
+             }
+      
                 dataContent++;
-
-
+                
+                
+              
           } //end of while loop
 
-
+      
   return 0;
 }
 
-
 /**
- * This method prints out what is stored in the message
+ * Print out the message
  * @author: Truc Chau
  */
 void printMessage(char a[])
@@ -204,4 +222,3 @@ int invertBinary(char* byte, unsigned char* invertedBinary) {
 	}
 	return 0;
 }
-S
