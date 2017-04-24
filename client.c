@@ -14,6 +14,8 @@
 #include<string.h>
 #include <time.h>
 #include<math.h>
+#include<signal.h>
+#include<errno.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -31,7 +33,8 @@ int main(int argc, char *argv[])
 { 
       int dataContent =1;
       srand(time(NULL));
-     
+      
+      
      //Each client sends out 10 message. We can increase this number if we want to. 
       while(dataContent!=10)
       {
@@ -48,15 +51,19 @@ int main(int argc, char *argv[])
             sock.sin_family=AF_INET;
             sock.sin_port= htons(4446); //port number
             //printf("socket? %d\n", serverSocket);
-      
+            
+             signal(SIGPIPE, SIG_IGN);
           //Should return a non-negative value -> success to create connection
           if(connect(serverSocket,(struct sockaddr*)&sock,sizeof(sock))>=0)
           { 
                printf("Connected to server #%d... \n",serverSocket);
+              
                char clientID='1';
             
               //random destination
-              int randomDest = (rand()%4)+1; // choose random number for dest from 0 to 3
+              int randomDest = (rand()%4)+1; // choose random number for dest from 1 to 4
+              
+              //can't send the message to itself so generates new number
               while(randomDest==1)
               {
                   randomDest = (rand()%4)+1;
@@ -64,9 +71,8 @@ int main(int argc, char *argv[])
               printf("Random dest = %d\n", randomDest);
               
                 int check;
-             
                 check = generateMessage(clientID, (char)randomDest, dataContent, dataContent, message);
-                //printMessage(message);
+                printMessage(message);
                 
                 if(check==0)
                 {
@@ -76,9 +82,12 @@ int main(int argc, char *argv[])
                 sleep(2); //wait 2 seconds to send next message
                 
                  //Send the message to server
-                 if( write(serverSocket,message,strlen(message)) <0)
-                 printf("ERROR writing to socket");
-                 
+                 ssize_t rc = write( randomDest,message,strlen(message) );
+                 if( rc == -1)
+                 {  
+                     if(errno == EPIPE)
+                     printf("ERROR writing to socket");
+                 }
                  
                 //Read the msg from the router
                 //Check if the received message is corrupted or not. If not, print it out.
@@ -86,6 +95,7 @@ int main(int argc, char *argv[])
                   if(checkChecksum(messageFromServer) ==1)
                   {
                       printf("***Message (client): %s***\n",messageFromServer);
+                      printMessage(messageFromServer);
                   }
                   
                   else
@@ -93,15 +103,16 @@ int main(int argc, char *argv[])
                       printf("Message is corrupted\n");
                   }
                   
-                  close(serverSocket);
-                  
+                 printf("END of the loop\n");
+                 close(serverSocket);  
             }
             
              else
              {
                   printf("Creating socket failed...\n");
+                   close(serverSocket);
              }
-      
+              
                 dataContent++;
                 
                 
@@ -111,6 +122,7 @@ int main(int argc, char *argv[])
       
   return 0;
 }
+
 
 /**
  * Print out the message
