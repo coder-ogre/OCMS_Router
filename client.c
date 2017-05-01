@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
             sock.sin_addr.s_addr=inet_addr("localhost");
             sock.sin_family=AF_INET;
             sock.sin_port= htons(4446); //port number
-            //printf("socket? %d\n", serverSocket);
+            
             
              signal(SIGPIPE, SIG_IGN);
           //Should return a non-negative value -> success to create connection
