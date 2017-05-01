@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
       int dataContent =1;
       srand(time(NULL));
       
-      
      //Each client sends out 10 message. We can increase this number if we want to. 
       while(dataContent!=11)
       {
