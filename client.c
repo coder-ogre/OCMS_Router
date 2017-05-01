@@ -36,89 +36,116 @@ int main(int argc, char *argv[])
       
       
      //Each client sends out 10 message. We can increase this number if we want to. 
-      while(dataContent!=10)
+      while(dataContent!=11)
       {
-           struct sockaddr_in sock;
+           struct sockaddr_in sock; //server address
            int serverSocket=socket(AF_INET,SOCK_STREAM,0);
            char message[6];
            char messageFromServer[6];
       
-            memset(&sock, '\0', sizeof(sock));
-            //memset(&message, '\0', sizeof(message));
+            memset(&sock, '0', sizeof(sock));
+            memset(&message, '\0', sizeof(message));
+            memset(&messageFromServer, '\0', sizeof(messageFromServer));
             
-            /***Set up base socket***/
-            sock.sin_addr.s_addr=inet_addr("localhost");
-            sock.sin_family=AF_INET;
-            sock.sin_port= htons(4446); //port number
-            
-            
-             signal(SIGPIPE, SIG_IGN);
-          //Should return a non-negative value -> success to create connection
-          if(connect(serverSocket,(struct sockaddr*)&sock,sizeof(sock))>=0)
-          { 
-               printf("Connected to server #%d... \n",serverSocket);
-              
-               char clientID='1';
-            
-              //random destination
+            //random destination
               int randomDest = (rand()%4)+1; // choose random number for dest from 1 to 4
               
-              //can't send the message to itself so generates new number
+              //can't send the message to itself (Dest = 1) so generates new number for destination
               while(randomDest==1)
               {
                   randomDest = (rand()%4)+1;
               }
-              printf("Random dest = %d\n", randomDest);
+              //printf("Random dest = %d\n", randomDest);
+              
+              
+            /***Set up base socket***/
+            sock.sin_addr.s_addr=inet_addr("127.0.0.1");
+            sock.sin_family=AF_INET;
+            sock.sin_port= htons(4447); //port number
+           
+            
+             signal(SIGPIPE, SIG_IGN);
+          //Should return a non-negative value -> success to create connection
+          int checkConnection = connect(serverSocket,(struct sockaddr*)&sock, sizeof(sock));
+          if(checkConnection >=0)
+          { 
+               //printf("Connection is created\n");
+              
+               char clientID='1';
+            
+              
               
                 int check;
-                check = generateMessage(clientID, (char)randomDest, dataContent, dataContent, message);
-                printMessage(message);
+                check = generateMessage(clientID, (randomDest+ '0'), (dataContent+'0'), (dataContent+ '0') , message);
                 
-                if(check==0)
+                //Checking whether the message is created or not
+                if(check!=0)
                 {
-                    printf("Message is created\n");
+                    printf("Message is NOT created\n");   
                 }
                 
-                sleep(2); //wait 2 seconds to send next message
-                
+              
                  //Send the message to server
-                 ssize_t rc = write( randomDest,message,strlen(message) );
-                 if( rc == -1)
+                 ssize_t rc = write(serverSocket,message,sizeof(message));
+                 if(rc == -1)
                  {  
                      if(errno == EPIPE)
-                     printf("ERROR writing to socket");
+                     printf("ERROR writing to socket\n");
+                 }
+                 else
+                 {
+                     printMessage(message);
+                     printf("Messge is sent to destination #%d\n", randomDest );
+                     printf("\n");
+                     
+                     
                  }
                  
                 //Read the msg from the router
                 //Check if the received message is corrupted or not. If not, print it out.
-                  read(serverSocket,messageFromServer,6);
-                  if(checkChecksum(messageFromServer) ==1)
-                  {
-                      printf("***Message (client): %s***\n",messageFromServer);
-                      printMessage(messageFromServer);
-                  }
-                  
+                
+                ssize_t recv = read(serverSocket,messageFromServer,sizeof(messageFromServer) );
+                if(recv == -1)
+                {
+                    printf("Don't receive any messages \n");
+                
+                }
+                
+                else
+                {
+                    printf("Receive message from somewhere \n");
+                    
+                }
+                
+                
+                 if(checkChecksum(messageFromServer) == 1)
+                 {
+                      printf("**Received message is: %s***\n",messageFromServer);
+                     
+                 }
+                 
                   else
                   {
                       printf("Message is corrupted\n");
                   }
                   
-                 printf("END of the loop\n");
+                  
+                  
                  close(serverSocket);  
+      
+                 sleep(2); //wait 2 seconds to send next message
             }
             
              else
              {
                   printf("Creating socket failed...\n");
-                   close(serverSocket);
+                  close(serverSocket);
              }
               
                 dataContent++;
                 
-                
-              
           } //end of while loop
-
+           printf("END of the loop\n");
       
   return 0;
 }
@@ -131,11 +158,13 @@ int main(int argc, char *argv[])
 void printMessage(char a[])
 {
     int i;
-    printf("Message is ");
+    printf("The content of the sent message is: ");
     for(i =0; i<5; i++)
     {
-          printf(" %c. ", a[i]);
+        printf("%c", a[i] );
     }
+	
+    printf("\n");
 
 }
 
